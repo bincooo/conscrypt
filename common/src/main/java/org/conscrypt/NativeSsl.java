@@ -341,7 +341,17 @@ final class NativeSsl {
 
     private static void setDefaultNamedGroups(long ssl, NativeSsl sslHolder) {
         // When the groups list is empty, the default named groups are used.
-        NativeCrypto.SSL_set1_groups(ssl, sslHolder, new int[0]);
+        // NativeCrypto.SSL_set1_groups(ssl, sslHolder, new int[0]);
+
+        // Chrome-compatible default named groups order
+        // X25519, prime256v1, secp384r1
+        int[] chromeDefaultGroups = new int[] {
+                NativeConstants.NID_X25519MLKEM768,
+                NativeConstants.NID_X25519,
+                NativeConstants.NID_X9_62_prime256v1,
+                NativeConstants.NID_secp384r1,
+        };
+        NativeCrypto.SSL_set1_groups(ssl, sslHolder, chromeDefaultGroups);
     }
 
     void initialize(String hostname, OpenSSLKey channelIdPrivateKey) throws IOException {
