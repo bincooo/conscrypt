@@ -1745,6 +1745,28 @@ final class ConscryptEngine extends AbstractConscryptEngine
     @Override
     void setApplicationProtocols(String[] protocols) {
         sslParameters.setApplicationProtocols(protocols);
+
+        boolean hasH2 = false;
+        for (String p : protocols) {
+            if ("h2".equals(p)) {
+                hasH2 = true;
+                break;
+            }
+        }
+
+        if (hasH2) {
+            // 协议: "h2"
+            byte[] protocol = new byte[] { 'h', '2' };
+            // Settings 数据: 必须是 HTTP/2 SETTINGS frame 的 payload (不含 Frame Header)
+            // 例如: Identifier(2字节) + Value(4字节)
+            // 假设设置 HEADER_TABLE_SIZE (0x01) 为 65536 (0x00010000)
+            byte[] settings = new byte[] {
+                    0x00, 0x01, 0x00, 0x01, 0x00, 0x00,       // ID 1 (Header Table) = 65536
+                    0x00, 0x03, 0x00, 0x00, 0x03, (byte)0xe8, // ID 3 (Max Streams) = 1000
+                    0x00, 0x04, 0x00, 0x60, 0x00, 0x00        // ID 4 (Init Window) = 6MB
+            };
+            sslParameters.setApplicationSettings(protocol, settings);
+        }
     }
 
     @Override

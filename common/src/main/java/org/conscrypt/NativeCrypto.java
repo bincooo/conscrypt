@@ -1559,6 +1559,12 @@ public final class NativeCrypto {
             long ssl, NativeSsl ssl_holder, boolean hasSelector) throws IOException;
 
     /**
+     * the application settings (ALPS) extension.
+     */
+    public static native void SSL_add_application_settings(long ssl, NativeSsl ssl_holder,
+                                                           byte[] protocol, byte[] settings) throws SSLException;
+
+    /**
      * Returns the selected ALPN protocol. If the server did not select a
      * protocol, {@code null} will be returned.
      */

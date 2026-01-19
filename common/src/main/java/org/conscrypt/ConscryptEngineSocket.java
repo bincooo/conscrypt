@@ -118,6 +118,7 @@ class ConscryptEngineSocket extends OpenSSLSocketImpl implements SSLParametersIm
         } else {
             modifiedParams = sslParameters;
         }
+
         ConscryptEngine engine =
             new ConscryptEngine(modifiedParams, socket.peerInfoProvider(), socket);
 

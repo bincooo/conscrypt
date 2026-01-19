@@ -424,6 +424,17 @@ final class NativeSsl {
             NativeCrypto.setHasApplicationProtocolSelector(ssl, this, true);
         }
 
+        // 应用 Application Settings (ALPS)
+        if (isClient() && parameters.applicationSettingsProtocol != null
+                && parameters.applicationSettingsData != null) {
+            NativeCrypto.SSL_add_application_settings(
+                    ssl,
+                    this,
+                    parameters.applicationSettingsProtocol,
+                    parameters.applicationSettingsData
+            );
+        }
+
         // setup server certificates and private keys.
         // clients will receive a call back to request certificates.
         if (!isClient()) {

@@ -9683,6 +9683,62 @@ static void NativeCrypto_setHasApplicationProtocolSelector(JNIEnv* env, jclass, 
 }
 
 /**
+ * the application settings (ALPS) extension.
+ * public static native void SSL_add_application_settings(long ssl, NativeSsl ssl_holder, byte[] protocol, byte[] settings);
+ */
+static void NativeCrypto_SSL_add_application_settings(JNIEnv* env, jclass, jlong ssl_address,
+                                                      CONSCRYPT_UNUSED jobject ssl_holder,
+                                                      jbyteArray protocolArray,
+                                                      jbyteArray settingsArray) {
+    CHECK_ERROR_QUEUE_ON_RETURN;
+    SSL* ssl = to_SSL(env, ssl_address, true);
+    JNI_TRACE("ssl=%p NativeCrypto_SSL_add_application_settings", ssl);
+    if (ssl == nullptr) {
+        return;
+    }
+
+    if (protocolArray == nullptr) {
+        conscrypt::jniutil::throwNullPointerException(env, "protocol == null");
+        JNI_TRACE("ssl=%p NativeCrypto_SSL_add_application_settings => protocol == null", ssl);
+        return;
+    }
+    if (settingsArray == nullptr) {
+        conscrypt::jniutil::throwNullPointerException(env, "settings == null");
+        JNI_TRACE("ssl=%p NativeCrypto_SSL_add_application_settings => settings == null", ssl);
+        return;
+    }
+
+    ScopedByteArrayRO protocolBytes(env, protocolArray);
+    if (protocolBytes.get() == nullptr) {
+        JNI_TRACE("ssl=%p NativeCrypto_SSL_add_application_settings => protocolBytes null", ssl);
+        return;
+    }
+
+    ScopedByteArrayRO settingsBytes(env, settingsArray);
+    if (settingsBytes.get() == nullptr) {
+        JNI_TRACE("ssl=%p NativeCrypto_SSL_add_application_settings => settingsBytes null", ssl);
+        return;
+    }
+
+    // 调用 BoringSSL API
+    int ret = SSL_add_application_settings(
+            ssl,
+            reinterpret_cast<const uint8_t*>(protocolBytes.get()),
+            protocolBytes.size(),
+            reinterpret_cast<const uint8_t*>(settingsBytes.get()),
+            settingsBytes.size());
+
+    if (ret != 1) {
+        conscrypt::jniutil::throwSSLExceptionWithSslErrors(env, ssl, SSL_ERROR_NONE,
+                                                           "Error adding application settings");
+        JNI_TRACE("ssl=%p NativeCrypto_SSL_add_application_settings => error", ssl);
+        return;
+    }
+
+    JNI_TRACE("ssl=%p NativeCrypto_SSL_add_application_settings => success", ssl);
+}
+
+/**
  * Perform SSL handshake
  */
 static void NativeCrypto_SSL_do_handshake(JNIEnv* env, jclass, jlong ssl_address,
@@ -12560,6 +12616,7 @@ static JNINativeMethod sNativeCryptoMethods[] = {
         CONSCRYPT_NATIVE_METHOD(getApplicationProtocol, "(J" REF_SSL ")[B"),
         CONSCRYPT_NATIVE_METHOD(setApplicationProtocols, "(J" REF_SSL "Z[B)V"),
         CONSCRYPT_NATIVE_METHOD(setHasApplicationProtocolSelector, "(J" REF_SSL "Z)V"),
+        CONSCRYPT_NATIVE_METHOD(SSL_add_application_settings, "(J" REF_SSL "[B[B)V"),
         CONSCRYPT_NATIVE_METHOD(SSL_CIPHER_get_kx_name, "(J)Ljava/lang/String;"),
         CONSCRYPT_NATIVE_METHOD(get_cipher_names, "(Ljava/lang/String;)[Ljava/lang/String;"),
         CONSCRYPT_NATIVE_METHOD(get_ocsp_single_extension,

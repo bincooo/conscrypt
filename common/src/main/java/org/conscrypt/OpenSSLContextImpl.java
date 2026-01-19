@@ -19,6 +19,7 @@ package org.conscrypt;
 import static org.conscrypt.Platform.wrapEngine;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.SecureRandom;
@@ -113,6 +114,7 @@ public abstract class OpenSSLContextImpl extends SSLContextSpi {
             throws KeyManagementException {
         sslParameters = new SSLParametersImpl(
                 kms, tms, sr, clientSessionContext, serverSessionContext, protocols);
+        sslParameters.setApplicationProtocols(new String[]{"h2", "http/1.1"});
     }
 
     @Override

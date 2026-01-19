@@ -117,6 +117,9 @@ final class SSLParametersImpl implements Cloneable {
      */
     boolean channelIdEnabled;
 
+    byte[] applicationSettingsProtocol;
+    byte[] applicationSettingsData;
+
     /**
      * Initializes the parameters. Naturally this constructor is used
      * in SSLContextImpl.engineInit method which directly passes its
@@ -237,6 +240,11 @@ final class SSLParametersImpl implements Cloneable {
         this.useSessionTickets = sslParams.useSessionTickets;
         this.useSni = sslParams.useSni;
         this.channelIdEnabled = sslParams.channelIdEnabled;
+    }
+
+    void setApplicationSettings(byte[] protocol, byte[] settings) {
+        this.applicationSettingsProtocol = protocol;
+        this.applicationSettingsData = settings;
     }
 
     /**
@@ -602,20 +610,34 @@ final class SSLParametersImpl implements Cloneable {
     @Override
     protected Object clone() {
         try {
-            return super.clone();
+//            return super.clone();
+
+            SSLParametersImpl instance = (SSLParametersImpl) super.clone();
+            this.cloneApplicationSettings(instance);
+            return instance;
+
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
     }
 
+    public void cloneApplicationSettings(SSLParametersImpl parameters) {
+        parameters.applicationSettingsProtocol = this.applicationSettingsProtocol;
+        parameters.applicationSettingsData = this.applicationSettingsData;
+    }
+
     SSLParametersImpl cloneWithTrustManager(X509TrustManager newTrustManager) {
-        return new SSLParametersImpl(clientSessionContext, serverSessionContext, x509KeyManager,
+        SSLParametersImpl parameters = new SSLParametersImpl(clientSessionContext, serverSessionContext, x509KeyManager,
                 pskKeyManager, newTrustManager, null, null, this);
+        this.cloneApplicationSettings(parameters);
+        return parameters;
     }
 
     SSLParametersImpl cloneWithSpake() {
-        return new SSLParametersImpl(clientSessionContext, serverSessionContext, null, null, null,
+        SSLParametersImpl parameters = new SSLParametersImpl(clientSessionContext, serverSessionContext, null, null, null,
                 spake2PlusTrustManager, spake2PlusKeyManager, this);
+        this.cloneApplicationSettings(parameters);
+        return parameters;
     }
 
     private static X509KeyManager getDefaultX509KeyManager() throws KeyManagementException {
