@@ -8520,7 +8520,7 @@ static jlong NativeCrypto_SSL_CTX_new(JNIEnv* env, jclass) {
 
     // GREASE
     SSL_CTX_set_grease_enabled(sslCtx.get(), 1);
-    SSL_CTX_set_permute_extensions(sslCtx.get(), 0);
+    SSL_CTX_set_permute_extensions(sslCtx.get(), 1);
 
     SSL_CTX_set_info_callback(sslCtx.get(), info_callback);
     SSL_CTX_set_cert_cb(sslCtx.get(), cert_cb, nullptr);
