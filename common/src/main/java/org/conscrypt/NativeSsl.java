@@ -435,6 +435,13 @@ final class NativeSsl {
             );
         }
 
+        // 开启 RFC 6962 (Certificate Transparency) 和 RFC 6066 (OCSP Stapling)
+        NativeCrypto.SSL_enable_signed_cert_timestamps(ssl, this);
+        NativeCrypto.SSL_enable_ocsp_stapling(ssl, this);
+
+        // 开启 ECH GREASE
+        NativeCrypto.SSL_set_enable_ech_grease(ssl, this, true);
+
         // setup server certificates and private keys.
         // clients will receive a call back to request certificates.
         if (!isClient()) {
